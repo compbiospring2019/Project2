@@ -61,7 +61,7 @@ class DecisionTree(object):
             return None
 
         attribute_gain = {}
-        max_entropy_attr = None
+        max_gain_attr = None
         for attr in current_node.attributes_left:
             attribute_gain[attr] = total_entropy
             for attr_val in range(options[attr]):
@@ -72,12 +72,12 @@ class DecisionTree(object):
                 relevant_rsas = [mol['rsa-label'] for mol in relevant_molecules]
                 entropy = self.compute_entropy(relevant_rsas)
                 attribute_gain[attr] -= probability * entropy
-            if not max_entropy_attr:
-                max_entropy_attr = attr
-            elif attribute_gain[max_entropy_attr] < attribute_gain[attr]:
-                max_entropy_attr = attr
+            if not max_gain_attr:
+                max_gain_attr = attr
+            elif attribute_gain[max_gain_attr] < attribute_gain[attr]:
+                max_gain_attr = attr
 
-        return max_entropy_attr
+        return max_gain_attr
 
     def compute_entropy(self, outcome_list):
         # Outcome list: the list of outcomes (y/n) for a given data set
