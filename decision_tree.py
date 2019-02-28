@@ -1,4 +1,4 @@
-from amino_acids import get_amino_acid
+from amino_acids import get_amino_acid, options
 from node import Node
 import math
 
@@ -32,14 +32,42 @@ class DecisionTree(object):
             current_node = self.root
 
         # Choose best attribute
-        # Create children nodes based on that attribute
-        # Recursive calls to those children nodes
+        best_attribute = self.compute_best_attribute(current_node)
+        if best_attribute is None:
+            # Data is perfectly classified
+            return
 
-        pass
+        # Create children nodes based on that attribute
+        children = current_node.make_children(best_attribute)
+
+        # Recursive calls to those children nodes
+        for child in children:
+            self.build_tree(child)
 
     def compute_best_attribute(self, current_node):
-        # Based on current node, select
-        pass
+        # Based on current node, select the best attribute from the leftover attributes
+        total_outcomes = [mol['rsa-label'] for mol in current_node.molecules]
+        total_entropy = self.compute_entropy(total_outcomes)
+
+        if total_entropy == 0:
+            # Data is perfectly classified
+            return None
+
+        attribute_gain = {}
+        max_entropy_attr = None
+        for attr in current_node.attributes_left:
+            attribute_gain[attr] = total_entropy
+            for attr_val in range(options[attr]):
+                # Calculate the portion of the weighted average
+                # So, (Probability of attr=attr_val) * (Entropy(attr=attr_val))
+                relevant_molecules = [mol for mol in current_node.molecules if mol[attr] == attr_val]
+                probability = float(len(relevant_molecules)) / len(current_node.molecules)
+                entropy = self.compute_entropy(relevant_molecules)
+                attribute_gain[attr] -= probability * entropy
+            if max_entropy_attr and attribute_gain[max_entropy_attr] < attribute_gain[attr]:
+                max_entropy_attr = attr
+
+        return max_entropy_attr
 
     def compute_entropy(self, outcome_list):
         # Outcome list: the list of outcomes (y/n) for a given data set

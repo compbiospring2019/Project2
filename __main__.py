@@ -36,6 +36,7 @@ def main():
 
     decision_tree = DecisionTree(fasta, sa)
     decision_tree.build_feature_matrix()
+    decision_tree.build_tree()
 
 
 if __name__ == '__main__':
