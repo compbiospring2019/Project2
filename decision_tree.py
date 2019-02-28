@@ -1,7 +1,7 @@
 from amino_acids import get_amino_acid
 
 
-class DecesionTree(object):
+class DecisionTree(object):
     root = None
     feature_matrix = None
     fasta = None
