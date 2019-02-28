@@ -29,16 +29,21 @@ class DecisionTree(object):
     def build_tree(self, current_node=None):
         # Recursive 'build the tree' funct starting with root node
         if current_node is None:
+            self.root.attributes_left = [key for key in options.keys() if key not in ['name', 'rsa-label']]
+            self.root.molecules = self.feature_matrix
             current_node = self.root
 
         # Choose best attribute
         best_attribute = self.compute_best_attribute(current_node)
         if best_attribute is None:
             # Data is perfectly classified
+            print('Perfectly classified')
             return
 
         # Create children nodes based on that attribute
         children = current_node.make_children(best_attribute)
+
+        print('current_node.attribute: {}'.format(current_node.attribute))
 
         # Recursive calls to those children nodes
         for child in children:
@@ -48,6 +53,8 @@ class DecisionTree(object):
         # Based on current node, select the best attribute from the leftover attributes
         total_outcomes = [mol['rsa-label'] for mol in current_node.molecules]
         total_entropy = self.compute_entropy(total_outcomes)
+
+        print('Current node attrs left: {}'.format(current_node.attributes_left))
 
         if total_entropy == 0:
             # Data is perfectly classified
@@ -62,9 +69,12 @@ class DecisionTree(object):
                 # So, (Probability of attr=attr_val) * (Entropy(attr=attr_val))
                 relevant_molecules = [mol for mol in current_node.molecules if mol[attr] == attr_val]
                 probability = float(len(relevant_molecules)) / len(current_node.molecules)
-                entropy = self.compute_entropy(relevant_molecules)
+                relevant_rsas = [mol['rsa-label'] for mol in relevant_molecules]
+                entropy = self.compute_entropy(relevant_rsas)
                 attribute_gain[attr] -= probability * entropy
-            if max_entropy_attr and attribute_gain[max_entropy_attr] < attribute_gain[attr]:
+            if not max_entropy_attr:
+                max_entropy_attr = attr
+            elif attribute_gain[max_entropy_attr] < attribute_gain[attr]:
                 max_entropy_attr = attr
 
         return max_entropy_attr
