@@ -1,5 +1,6 @@
 import utils
 import sys
+from decision_tree import DecisionTree
 
 err_msg = '''
 Please enter two file names (absolute paths)
@@ -32,6 +33,9 @@ def main():
 
     print(fasta)
     print(sa)
+
+    decision_tree = DecisionTree(fasta, sa)
+    decision_tree.build_feature_matrix()
 
 
 if __name__ == '__main__':

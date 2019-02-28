@@ -5,7 +5,7 @@ import math
 
 class DecisionTree(object):
     root = None
-    feature_matrix = None
+    feature_matrix = []
     fasta = None
     sa = None
 
@@ -24,7 +24,7 @@ class DecisionTree(object):
             acid['rsa-label'] = self.sa[index]
 
             # Add the acid to the matrix
-            self.matrix.append([])
+            self.feature_matrix.append(acid)
 
     def build_tree(self, current_node=None):
         # Recursive 'build the tree' funct starting with root node
