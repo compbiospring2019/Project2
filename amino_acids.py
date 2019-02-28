@@ -241,3 +241,9 @@ amino_acids = {
         'proline': 0
     }
 }
+
+
+def get_amino_acid(name):
+    acid_dictionary = {'name': name}
+    acid_dictionary.update(amino_acids[name])
+    return acid_dictionary
