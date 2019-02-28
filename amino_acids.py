@@ -242,6 +242,20 @@ amino_acids = {
     }
 }
 
+options = {
+    'hydrophobic': 2,
+    'polar': 2,
+    'charged': 2,
+    'positive': 2,
+    'negative': 2,
+    'small': 2,
+    'tiny': 2,
+    'aliphatic': 2,
+    'aromatic': 2,
+    'proline': 2,
+    'rsa-label': 2
+}
+
 
 def get_amino_acid(name):
     acid_dictionary = {'name': name}

@@ -65,18 +65,3 @@ class DecisionTree(object):
 
     def calculate_eval_metrics(self):
         pass
-
-
-options = {
-    'hydrophobic': 2,
-    'polar': 2,
-    'charged': 2,
-    'positive': 2,
-    'negative': 2,
-    'small': 2,
-    'tiny': 2,
-    'aliphatic': 2,
-    'aromatic': 2,
-    'proline': 2,
-    'rsa-label': 2
-}
