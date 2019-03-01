@@ -47,14 +47,15 @@ class DecisionTree(object):
 
         # Recursive calls to those children nodes
         for child in children:
-            self.build_tree(child)
+            if len(child.molecules):
+                self.build_tree(child)
 
     def compute_best_attribute(self, current_node):
         # Based on current node, select the best attribute from the leftover attributes
         total_outcomes = [mol['rsa-label'] for mol in current_node.molecules]
         total_entropy = self.compute_entropy(total_outcomes)
 
-        print('Current node attrs left: {}'.format(current_node.attributes_left))
+        #print('Current node attrs left: {}'.format(current_node.attributes_left))
 
         if total_entropy == 0:
             # Data is perfectly classified
@@ -100,6 +101,17 @@ class DecisionTree(object):
 
     def evaluate_model(self):
         pass
+
+    def walk_tree(self, feature_vector):
+        print('Walking the tree...')
+        print('Feature vector: {}'.format(feature_vector))
+        current_node = self.root
+        while current_node.children:
+            attr_value = feature_vector[current_node.attribute]
+            print('{} and {}'.format(current_node.attribute, attr_value))
+            current_node = current_node.children[attr_value]
+
+        print('Current node\'s rsa-label = {}\n'.format(current_node.molecules[0]['rsa-label']))
 
     def calculate_eval_metrics(self):
         pass

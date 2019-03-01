@@ -38,6 +38,45 @@ def main():
     decision_tree.build_feature_matrix()
     decision_tree.build_tree()
 
+    decision_tree.walk_tree({
+        'hydrophobic': 1,
+        'polar': 0,
+        'charged': 0,
+        'positive': 0,
+        'negative': 0,
+        'small': 1,
+        'tiny': 1,
+        'aliphatic': 0,
+        'aromatic': 0,
+        'proline': 0
+    })  # A, returns B
+
+    decision_tree.walk_tree({
+        'hydrophobic': 0,
+        'polar': 1,
+        'charged': 1,
+        'positive': 1,
+        'negative': 0,
+        'small': 0,
+        'tiny': 0,
+        'aliphatic': 0,
+        'aromatic': 0,
+        'proline': 0
+    })  # K, returns B
+
+    decision_tree.walk_tree({
+        'hydrophobic': 1,
+        'polar': 0,
+        'charged': 0,
+        'positive': 0,
+        'negative': 0,
+        'small': 0,
+        'tiny': 0,
+        'aliphatic': 0,
+        'aromatic': 1,
+        'proline': 0
+    })  # F, returns E
+
 
 if __name__ == '__main__':
     main()

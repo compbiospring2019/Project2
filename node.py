@@ -3,7 +3,7 @@ from amino_acids import options
 
 class Node(object):
     parent = None           # Pointer to parent node
-    children = {}           # Pointers to children nodes (key=attribute, value=child node)
+    children = []           # Pointers to children nodes (index is attribute value)
     attributes_left = []    # List of attribute (strings) left
     molecules = []          # List of amino acids (dicts) that fit into this subtree
     attribute = ''          # The attribute choice that this node represents
@@ -40,5 +40,7 @@ class Node(object):
             child.attributes_left = [attr for attr in self.attributes_left if attr != attribute]
             child.molecules = [mol for mol in self.molecules if mol[attribute] == attr_value]
             children.append(child)
+
+        self.children = children
 
         return children
