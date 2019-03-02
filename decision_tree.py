@@ -1,34 +1,57 @@
 from amino_acids import get_amino_acid, options
 from node import Node
 import math
+from random import sample
+import utils
 
 
 class DecisionTree(object):
-    root = None
+    root = Node()
     feature_matrix = []
-    fasta = None
-    sa = None
+    fasta_train = None
+    fasta_test = None
+    fasta_dir = ''
+    sa_dir = ''
 
-    def __init__(self, fasta, sa):
-        # TODO: Training data vs. test data
-        self.fasta = fasta
-        self.sa = sa
-        self.root = Node()
+    def __init__(self, fasta_list, sa_list, fasta_dir, sa_dir):
+        # Split files into training and testing data
+        self.split_files(fasta_list, sa_list)
+
+        # Save the directory paths
+        self.fasta_dir = fasta_dir
+        self.sa_dir = sa_dir
+
+    def split_files(self, fasta_list, sa_list):
+        # Split files into testing and training data
+        self.test_correct_fasta_files(fasta_list, sa_list)
+        self.fasta_train = sample(fasta_list, int(0.75 * len(fasta_list)))
+        self.fasta_test = [f_name for f_name in fasta_list if f_name not in self.fasta_train]
+
+    def test_correct_fasta_files(self, fasta_list, sa_list):
+        # Make sure a .sa file exists for each .fasta file
+        for fasta_name in fasta_list:
+            if fasta_name.replace('.fasta', '.sa') not in sa_list:
+                raise Exception('FASTA files don\'t match up with .sa files: {}'.format(fasta_name))
 
     def build_feature_matrix(self):
-        for index in range(len(self.fasta)):
-            # Create the AA object
-            acid = get_amino_acid(self.fasta[index].upper())
+        # For each fasta file in the training data, read the sequences and add them to the feature matrix
+        for fasta_name in self.fasta_train:
+            fasta = utils.read_sequence(fasta_name, self.fasta_dir)
+            sa = utils.read_sequence(fasta_name.replace('.fasta', '.sa'), self.sa_dir)
+            for index in range(len(fasta)):
+                # Create the AA object
+                acid = get_amino_acid(fasta[index].upper())
 
-            # Add the RSA label
-            acid['rsa-label'] = self.sa[index]
+                # Add the RSA label
+                acid['rsa-label'] = sa[index]
 
-            # Add the acid to the matrix
-            self.feature_matrix.append(acid)
+                # Add the acid to the matrix
+                self.feature_matrix.append(acid)
 
     def build_tree(self, current_node=None):
         # Recursive 'build the tree' funct starting with root node
         if current_node is None:
+            # Start the tree with the root node
             self.root.attributes_left = [key for key in options.keys() if key not in ['name', 'rsa-label']]
             self.root.molecules = self.feature_matrix
             current_node = self.root
@@ -55,7 +78,7 @@ class DecisionTree(object):
         total_outcomes = [mol['rsa-label'] for mol in current_node.molecules]
         total_entropy = self.compute_entropy(total_outcomes)
 
-        #print('Current node attrs left: {}'.format(current_node.attributes_left))
+        # print('Current node attrs left: {}'.format(current_node.attributes_left))
 
         if total_entropy == 0:
             # Data is perfectly classified
@@ -73,6 +96,7 @@ class DecisionTree(object):
                 relevant_rsas = [mol['rsa-label'] for mol in relevant_molecules]
                 entropy = self.compute_entropy(relevant_rsas)
                 attribute_gain[attr] -= probability * entropy
+            # Keep track of the attribute with the maximum gain
             if not max_gain_attr:
                 max_gain_attr = attr
             elif attribute_gain[max_gain_attr] < attribute_gain[attr]:
@@ -112,6 +136,8 @@ class DecisionTree(object):
             current_node = current_node.children[attr_value]
 
         print('Current node\'s rsa-label = {}\n'.format(current_node.molecules[0]['rsa-label']))
+
+        return current_node.molecules[0]['rsa-label']
 
     def calculate_eval_metrics(self):
         pass

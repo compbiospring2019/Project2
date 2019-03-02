@@ -3,9 +3,11 @@ import sys
 from decision_tree import DecisionTree
 
 err_msg = '''
-Please enter two file names (absolute paths)
-of sequences for Decision Tree training data
-with double quotes around them (if they have spaces)'''
+Please enter two directory names (absolute paths)
+containing sequences for Decision Tree training data
+(with double quotes around them if they have spaces).
+The directory with FASTA files should come first, 
+followed by the path to the .sa files.'''
 
 
 def parse_args():
@@ -14,30 +16,27 @@ def parse_args():
         sys.exit()
 
     try:
-        sequence_1 = utils.read_sequence(sys.argv[1])
-        sequence_2 = utils.read_sequence(sys.argv[2])
+        # Get the lists of fasta and sa file names
+        fasta = utils.read_directory_contents(sys.argv[1], '.fasta')
+        sa = utils.read_directory_contents(sys.argv[2], '.sa')
     except:
-        # File parsing has failed. Oops.
+        # Given paths are not valid directories
         print(err_msg)
         sys.exit()
 
-    # Return fasta, sa
-    if sys.argv[1].endswith('.sa'):
-        return sequence_2, sequence_1
-    return sequence_1, sequence_2
+    return fasta, sa
 
 
 def main():
-    # Read in the sequences:
+    # Read in the file names
     fasta, sa = parse_args()
 
-    print(fasta)
-    print(sa)
-
-    decision_tree = DecisionTree(fasta, sa)
+    # Create the decision tree and train the model
+    decision_tree = DecisionTree(fasta, sa, sys.argv[1], sys.argv[2])
     decision_tree.build_feature_matrix()
     decision_tree.build_tree()
 
+    # Testing data, TODO remove later
     decision_tree.walk_tree({
         'hydrophobic': 1,
         'polar': 0,
