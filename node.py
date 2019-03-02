@@ -7,6 +7,7 @@ class Node(object):
     attributes_left = []    # List of attribute (strings) left
     molecules = []          # List of amino acids (dicts) that fit into this subtree
     attribute = ''          # The attribute choice that this node represents
+    rsa_value = None          # The rsa-value this node represents, if it is a leaf node
 
     def __init__(self, parent_node=None):
         self.parent = parent_node
@@ -44,3 +45,20 @@ class Node(object):
         self.children = children
 
         return children
+
+    def calc_rsa_value(self):
+        # This node is a leaf node. Calculate the RSA value for this node.
+        if self.rsa_value is not None:
+            return self.rsa_value
+
+        rsa_values = [mol['rsa-label'] for mol in self.molecules]
+        values_list = []
+        max_val = None
+        for value in range(options['rsa-label']):
+            values_list.append(rsa_values.count(value))
+            if max_val is None or values_list[value] > values_list[max_val]:
+                max_val = value
+
+        self.rsa_value = max_val
+
+        return max_val

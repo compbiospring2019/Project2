@@ -152,22 +152,28 @@ class DecisionTree(object):
 
         # print('Current node\'s rsa-label = {}\n'.format(current_node.molecules[0]['rsa-label']))
 
-        return current_node.molecules[0]['rsa-label']
+        return current_node.calc_rsa_value()
 
     def calculate_eval_metrics(self, metrics):
         metrics = self.clarify_metrics(metrics)
-        print('True positive count:  {}'.format(metrics['tp']))
-        print('True negative count:  {}'.format(metrics['tn']))
-        print('False positive count: {}'.format(metrics['fp']))
-        print('False negative count: {}'.format(metrics['fn']))
+        print('total : {}'.format(metrics['sum']))
+        print('True positive count:  {} ({:2.4}%)'.format(metrics['tp'], (float(metrics['tp']) * 100 /metrics['sum'])))
+        print('True negative count:  {} ({:2.4}%)'.format(metrics['tn'], (float(metrics['tn']) * 100 /metrics['sum'])))
+        print('False positive count: {} ({:2.4}%)'.format(metrics['fp'], (float(metrics['fp']) * 100 /metrics['sum'])))
+        print('False negative count: {} ({:2.4}%)'.format(metrics['fn'], (float(metrics['fn']) * 100 /metrics['sum'])))
 
         precision = float(metrics['tp']) / (metrics['tp'] + metrics['fp'])
         recall = float(metrics['tp']) / (metrics['tp'] + metrics['fn'])
         accuracy = float(metrics['tp'] + metrics['tn']) / (metrics['tp'] + metrics['tn'] + metrics['fp'] + metrics['fn'])
         f1 = float(2 * precision * recall) / (precision + recall)
         mcc = float((metrics['tp'] * metrics['tn']) - (metrics['fp'] * metrics['fn']))
-        mcc /= math.sqrt((metrics['tp'] + metrics['fp']) * (metrics['tp'] + metrics['fn']) *
+        denominator = math.sqrt((metrics['tp'] + metrics['fp']) * (metrics['tp'] + metrics['fn']) *
                          (metrics['tn'] + metrics['fp']) * (metrics['tn'] + metrics['fn']))
+        if denominator == 0:
+            # Note: this probably won't ever happen, but just in case...
+            mcc = 'Divide by zero'
+        else:
+            mcc /= denominator
 
         print('Precision: {}'.format(precision))
         print('Recall:    {}'.format(recall))
@@ -176,9 +182,16 @@ class DecisionTree(object):
         print('MCC:       {}'.format(mcc))
 
     def clarify_metrics(self, metrics):
+        # Switch the metrics dictionary into more human-readable keys
         metrics['tn'] = metrics.pop((0, 0), 0)
         metrics['fp'] = metrics.pop((0, 1), 0)
         metrics['fn'] = metrics.pop((1, 0), 0)
         metrics['tp'] = metrics.pop((1, 1), 0)
+
+        sum = 0
+        for key in metrics.keys():
+            sum += metrics[key]
+
+        metrics['sum'] = sum
 
         return metrics
