@@ -261,3 +261,11 @@ def get_amino_acid(name):
     acid_dictionary = {'name': name}
     acid_dictionary.update(amino_acids[name])
     return acid_dictionary
+
+
+rsa_labels = {
+    'B': 0,
+    'E': 1,
+    0: 'B',
+    1: 'E'
+}

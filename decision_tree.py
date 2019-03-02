@@ -1,4 +1,4 @@
-from amino_acids import get_amino_acid, options
+from amino_acids import get_amino_acid, rsa_labels, options
 from node import Node
 import math
 from random import sample
@@ -43,7 +43,8 @@ class DecisionTree(object):
                 acid = get_amino_acid(fasta[index].upper())
 
                 # Add the RSA label
-                acid['rsa-label'] = sa[index]
+                rsa_binary = rsa_labels[sa[index]]
+                acid['rsa-label'] = rsa_binary
 
                 # Add the acid to the matrix
                 self.feature_matrix.append(acid)
@@ -59,14 +60,11 @@ class DecisionTree(object):
         # Choose best attribute
         best_attribute = self.compute_best_attribute(current_node)
         if best_attribute is None:
-            # Data is perfectly classified
-            print('Perfectly classified')
+            # Data is perfectly classified, or there are no more attributes
             return
 
         # Create children nodes based on that attribute
         children = current_node.make_children(best_attribute)
-
-        print('current_node.attribute: {}'.format(current_node.attribute))
 
         # Recursive calls to those children nodes
         for child in children:
@@ -77,8 +75,6 @@ class DecisionTree(object):
         # Based on current node, select the best attribute from the leftover attributes
         total_outcomes = [mol['rsa-label'] for mol in current_node.molecules]
         total_entropy = self.compute_entropy(total_outcomes)
-
-        # print('Current node attrs left: {}'.format(current_node.attributes_left))
 
         if total_entropy == 0:
             # Data is perfectly classified
@@ -124,20 +120,65 @@ class DecisionTree(object):
         return sum
 
     def evaluate_model(self):
-        pass
+        # Keeping track of metrics (true condition, predicted condition)
+        metrics = {
+            (0, 0): 0,  # True negative
+            (0, 1): 0,  # False positive
+            (1, 0): 0,  # False negative
+            (1, 1): 0   # True positive
+        }
+        # For each fasta file in the testing data, walk the tree for each amino acid
+        for fasta_name in self.fasta_test:
+            fasta = utils.read_sequence(fasta_name, self.fasta_dir)
+            sa = utils.read_sequence(fasta_name.replace('.fasta', '.sa'), self.sa_dir)
+            for index in range(len(fasta)):
+                # Test this amino acid against our decision tree
+                amino_acid = fasta[index]
+                expected_result = rsa_labels[sa[index]]
+                calculated_result = self.walk_tree(get_amino_acid(amino_acid))
+                # print('Acid {}, expected {}, calculated {}'.format(amino_acid, expected_result, calculated_result))
+                metrics[expected_result, calculated_result] += 1
+
+        self.calculate_eval_metrics(metrics)
 
     def walk_tree(self, feature_vector):
-        print('Walking the tree...')
-        print('Feature vector: {}'.format(feature_vector))
+        # print('Walking the tree...')
+        # print('Feature vector: {}'.format(feature_vector))
         current_node = self.root
         while current_node.children:
             attr_value = feature_vector[current_node.attribute]
-            print('{} and {}'.format(current_node.attribute, attr_value))
+            # print('{} and {}'.format(current_node.attribute, attr_value))
             current_node = current_node.children[attr_value]
 
-        print('Current node\'s rsa-label = {}\n'.format(current_node.molecules[0]['rsa-label']))
+        # print('Current node\'s rsa-label = {}\n'.format(current_node.molecules[0]['rsa-label']))
 
         return current_node.molecules[0]['rsa-label']
 
-    def calculate_eval_metrics(self):
-        pass
+    def calculate_eval_metrics(self, metrics):
+        metrics = self.clarify_metrics(metrics)
+        print('True positive count:  {}'.format(metrics['tp']))
+        print('True negative count:  {}'.format(metrics['tn']))
+        print('False positive count: {}'.format(metrics['fp']))
+        print('False negative count: {}'.format(metrics['fn']))
+
+        precision = float(metrics['tp']) / (metrics['tp'] + metrics['fp'])
+        recall = float(metrics['tp']) / (metrics['tp'] + metrics['fn'])
+        accuracy = float(metrics['tp'] + metrics['tn']) / (metrics['tp'] + metrics['tn'] + metrics['fp'] + metrics['fn'])
+        f1 = float(2 * precision * recall) / (precision + recall)
+        mcc = float((metrics['tp'] * metrics['tn']) - (metrics['fp'] * metrics['fn']))
+        mcc /= math.sqrt((metrics['tp'] + metrics['fp']) * (metrics['tp'] + metrics['fn']) *
+                         (metrics['tn'] + metrics['fp']) * (metrics['tn'] + metrics['fn']))
+
+        print('Precision: {}'.format(precision))
+        print('Recall:    {}'.format(recall))
+        print('Accuracy:  {}'.format(accuracy))
+        print('F1:        {}'.format(f1))
+        print('MCC:       {}'.format(mcc))
+
+    def clarify_metrics(self, metrics):
+        metrics['tn'] = metrics.pop((0, 0), 0)
+        metrics['fp'] = metrics.pop((0, 1), 0)
+        metrics['fn'] = metrics.pop((1, 0), 0)
+        metrics['tp'] = metrics.pop((1, 1), 0)
+
+        return metrics

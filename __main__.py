@@ -76,6 +76,7 @@ def main():
         'proline': 0
     })  # F, returns E
 
+    decision_tree.evaluate_model()
 
 if __name__ == '__main__':
     main()
