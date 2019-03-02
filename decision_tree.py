@@ -156,7 +156,6 @@ class DecisionTree(object):
 
     def calculate_eval_metrics(self, metrics):
         metrics = self.clarify_metrics(metrics)
-        print('total : {}'.format(metrics['sum']))
         print('True positive count:  {} ({:2.4}%)'.format(metrics['tp'], (float(metrics['tp']) * 100 /metrics['sum'])))
         print('True negative count:  {} ({:2.4}%)'.format(metrics['tn'], (float(metrics['tn']) * 100 /metrics['sum'])))
         print('False positive count: {} ({:2.4}%)'.format(metrics['fp'], (float(metrics['fp']) * 100 /metrics['sum'])))
