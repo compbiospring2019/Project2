@@ -9,13 +9,16 @@ def parse_args():
         print(err_msg)
         sys.exit()
 
-    return sys.argv[1]
+    if len(sys.argv) == 2:
+        return sys.argv[1], None
+    return sys.argv[1], sys.argv[2]
 
 
 def main():
     # Get file name and read the sequence
-    test_file = parse_args()
+    test_file, sa_file = parse_args()
     test_sequence = utils.read_sequence(test_file)
+    sa_sequence = utils.read_sequence(sa_file)
 
     # Read in the model
     json_model = utils.read_json()
@@ -23,7 +26,7 @@ def main():
     # Classify the test sequence
     predicted_rsa = DecisionTree.classify_sequence(test_sequence, json_model)
 
-    print(predicted_rsa)
+    utils.print_alignment(test_sequence, predicted_rsa, sa_sequence)
 
 
 if __name__ == '__main__':
