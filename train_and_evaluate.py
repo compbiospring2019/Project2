@@ -33,9 +33,19 @@ def main():
 
     # Create the decision tree and train the model
     decision_tree = DecisionTree(fasta, sa, sys.argv[1], sys.argv[2])
+
+    # Build the tree
     decision_tree.build_feature_matrix()
     decision_tree.build_tree()
+
+    # Evaluate the model
     decision_tree.evaluate_model()
+
+    # Write the model to a file
+    json_dict = decision_tree.to_json()
+    utils.write_json('model.json', json_dict)
+
+    print('\nDecision tree model written to model.json')
 
 
 if __name__ == '__main__':

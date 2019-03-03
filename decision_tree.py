@@ -194,3 +194,52 @@ class DecisionTree(object):
         metrics['sum'] = sum
 
         return metrics
+
+    def to_json(self, current_node=None):
+        # Convert the DT object into a JSON object (python dictionary)
+        if current_node is None:
+            # Start with the root node
+            current_node = self.root
+
+        if current_node.attribute is '' and not current_node.children:
+            # This may be a leaf node
+            if current_node.rsa_value is not None:
+                # This is a leaf node
+                return {'rsa-label': current_node.rsa_value}
+            # This was not a leaf node
+            return None
+
+        json_node = {
+            'attribute': current_node.attribute,
+            'children': []
+        }
+
+        for child in current_node.children:
+            # Create the json objects for the children nodes
+            json_node['children'].append(self.to_json(child))
+
+        return json_node
+
+    @classmethod
+    def classify_sequence(cls, sequence, json_object):
+        # Classify the amino acids in the sequence via the json tree
+        rsa_binary_list = []
+        for molecule in sequence:
+            rsa_value = cls.walk_json(get_amino_acid(molecule), json_object)
+            rsa_binary_list.append(rsa_value)
+
+        # Convert the binary labels back into E/B labels
+        rsa_list = [rsa_labels[val] for val in rsa_binary_list]
+        return ''.join(rsa_list)
+
+    @classmethod
+    def walk_json(cls, feature_vector, json_tree):
+        # Walk through the tree and find the RSA label for the given feature vector
+        current_node = json_tree
+
+        while 'attribute' in current_node:
+            # For each non-leaf node, grab the appropriate child node
+            attr_value = feature_vector[current_node['attribute']]
+            current_node = current_node['children'][attr_value]
+
+        return current_node['rsa-label']
