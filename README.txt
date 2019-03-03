@@ -2,19 +2,15 @@
 Usage Instructions
 ------------------
 
-Linux instructions:
+Linux and Windows instructions:
 To run this program, unzip our project. Change directories
 to our project directory (the directory containing main.py).
-Then, enter
+Then, to train the decision tree, enter
 
-python main.py <file1> <file2>
+python train_and_evaluate.py <fasta_directory> <sa_directory>
 
-in the command line, where file1 and file2 are the file
-paths to the fasta and sa files to be tested.
-
-
-Windows instructions:
-Follow the same instructions as the Linux instructions,
-however, use the name of the python script you have installed
-(mine is python27). We've tested with absolute file paths
-in double quotes, because my directory names had spaces in them.
+in the command line, where fasta_directory is the directory with
+the fasta files and sa_directory is the directory with
+the sa files for training and evaluating. If your python executable
+has a different name, use that name instead of 'python'. Paths
+were tested with absolute paths, enclosed in double quotes.
